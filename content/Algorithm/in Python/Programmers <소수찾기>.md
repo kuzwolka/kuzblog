@@ -1,0 +1,125 @@
+---
+publish: "true"
+title: "Programmers: 소수찾기"
+date: 2025-09-17
+tags:
+  - Algorithm
+  - Python
+  - ExhaustiveSearch
+  - itertools
+---
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/42839)
+### 문제 이해
+- 주어진 숫자 조각으로 만들 수 있는 모든 수를 만든 뒤 그 안에서 소수를 찾아야 한다.
+	- ex) [1, 7]의 경우 [1, 7, 17, 71]을 만들 수 있는데 이 중 소수는 [7, 17, 71]
+- 프로그램은 크게 두개 부분으로 나눠진다.
+	1. **모든 수를 만드는 부분(Permutation 이용)**
+	2. **만들어진 수에서 소수를 판별하는 부분**
+---
+### 문제 풀이
+1. **순열(Permutation) 조합 만들기**
+	- `itertools` 라이브러리의 `permutations` 모듈 사용
+	- 모든 길이의 순열 조합 만들기 
+		- 주어지는 numbers의 길이를 범위로 갖도록 `for i in range(len(numbers))` 사용
+	- 중복 제거를 위해 `itertools.permutations()`로 생성된 tuple들을 set에 저장
+	- **permutation 생성 함수**
+		```python
+		from itertools import permutations
+		
+		def generate_permutations(number: str):
+			# itertools.permutations 사용 위해 number 리스트로 변환
+			num_list = list(number)
+			
+			# 생성되는 모든 길이의 permutation의 결과를 담을 리스트
+			all_permutations = []
+			
+			# iteration을 1부터 숫자의 길이까지
+			for i in range(1, len(number)+1):
+				p = permutations(num_list, i)
+				all_permutations.extend(list(p))
+				
+			return set([int(''.join(permutation)) for permutation in all_permutations])
+		```
+1. **리스트 내부 숫자 소수 판별**
+	- `for i in range(2, len(number))`로 1과 자기 자신이 아닌 수로 나누면서 나눠지면 `False` 반환
+	- 0과 1은 어차피 소수가 아니기 때문에 사전에 `False` 반환 처리
+	- **소수 판별 함수**
+		```python
+		def is_prime(n: int):
+			if n < 2:
+				return False
+			
+			for i in range(2, n):
+				if n%i == 0:
+					return False
+			return True
+		```
+1. **최종 구현**
+	```python
+	def solution(numbers):
+		from itertools import permutations
+		answer = 0
+		
+		def generate_permutations(number: int):
+			num_list = list(number)
+			all_permutations = []
+			for i in range(1, len(num_list)+1):
+				p = permutations(num_list, i)
+				all_permutations.extend(p)
+			return set([int(''.join(permutation)) for permutation in all_permutations])
+		
+		def is_prime(n: int):
+			if n < 2:
+				return False
+			
+			for i in range(2, n):
+				if n%i == 0:
+					return False
+			return True
+		
+		for num in generate_permutations(numbers):
+			if is_prime(num):
+				answer += 1
+				
+		return answer
+	```
+---
+### 개념 정리
+#### **`itertools.permutations(iterable, r=None)`**
+- *iterable*에서 r 길이의 순열 조합을 반환한다.
+- r이 명시되지 않았을 경우 자동으로 iterable의 length로 고정됨.
+	- `permutations(range(3)) → 012 021 102 120 201 210`
+- iterable이 정렬된 상태라면 permutation들도 정렬된 채로 반환됨.  
+#### **`set`**
+- Python의 built-in type. mutable한 `set`이 있는가하면 immutable한 `frozenset`이 있다.
+- 새로운 `set`의 생성
+	```python
+	set(iterable=(), /)
+	```
+	- 위 방법을 통해 새로운 set object를 만들 수 있다.
+- `union`, `intersection`, `issuperset`, `difference`, `symmetric_difference` 등의 operation을 지원한다. 다만 이 부분은 일단 넘어가기로...
+---
+### 개선 방안: `is_prime`에 대하여
+앞서 구현한 소수 판별 함수 `is_prime()`은 다음과 같다.
+```python title="is_prime()"
+def is_prime(n: int):
+	if n < 2:
+		return False
+	
+	for i in range(2, n):
+		if n%i == 0:
+			return False
+	return True
+```
+이 자체로도 결과에 문제는 없으나 특정 수의 약수는 항상 짝지어 나오는데, 그 짝은 **항상 해당 숫자의 제곱근 보다 작은 수**가 들어간다. 따라서 전체에 대해 iteration 할 필요 없이 해당 수의 제곱근까지만 확인하면 된다.
+```python title="is_prime(): 개선" {5}
+def is_prime(n: int):
+	if n < 2:
+		return False
+	
+	for i in range(2, int(n ** 0.5)+1):
+		if n%i == 0:
+			return False
+	return True
+```
+하이라이트 된 부분처럼 고친 결과 채점 과정에서 2205.08ms 정도 걸리는 경우가 있었는데 5.66ms까지 단축할 수 있었다.

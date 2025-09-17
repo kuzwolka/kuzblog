@@ -1,0 +1,88 @@
+---
+publish: "true"
+title: "Programmers: 피로도"
+date: 2025-09-17
+tags:
+  - Algorithm
+  - ExhaustiveSearch
+  - Python
+  - itertools
+---
+### 문제 이해
+- 탐험할 수 있는 던전에는 피로도 제약이 존재하며, 사용자의 "현재 피로도", 던전 탐험의 제약인 "최소 필요 피로도", "소모 피로도"가 주어진다.
+- 사용자가 탐험할수 있는 최대 던전 수를 반환하도록 프로그램을 작성한다.
+---
+### 문제 풀이
+주어지는 dungeon의 수는 1~8이다. 따라서 `itertools.permutations`를 활용해 가능한 탐험 순서의 모든 조합을 만들고 하나하나 가능한지 따져보도록 하자.
+1. **던전 탐험 조합 생성**
+	```python
+	from itertools import permutations
+	p = list(permutations(dungeons))
+	```
+	던전 routing이 끝났으니 이제는 모든 route에 대한 검증을 할 차례다.
+2. **던전 route 검증**
+	`itertools.permutations`로 생성된 모든 조합에 대해 검증해야 하기 때문에 함수로 구현했다.
+	```python title="dungeon_expedition(k, dungeon_route)"
+	def dungeon_expedigion(k:int, dungeon_route: list) -> int:
+		# 탐험한 던전의 수. 추후 반환 될 값이다.
+		num_of_dungeon = 0
+		
+		# 던전 route의 피로도 조건과 피로도 감소값에 대해 iteration
+		for exhaust_condition, exhaust_deduction in dungeon_route:
+			# 피로도 조건을 만족하지 못하면 아예 던전을 탐험할 수 없으므로 해당 route는 버린다.
+			if k < exhaust_condition:
+				break
+			k -= exhaust_deduction
+			num_of_dungeon += 1
+		return num_of_dungeon
+	```
+1. **던전 최대 탐험 가능 수 반환**
+	```python
+	#앞서 구현한 함수를 통해 얻은 route 별 던전 탐험 횟수를 저장할 list
+	num_of_dungeon_list = []
+	# Permutations로 생성된 던전 routing에 대한 검증
+	for dungeon_route in p:
+		num_of_dungeon_list.append(dungeon_expedition(k, dungeon_route))
+		
+	# 최적의 route에서 최대한 많은 던전을 탐험한 횟수 반환
+	return max(num_of_dungeon_list)
+	```
+- **최종 구현**
+	```python
+	def solution(k, dungeons):
+	    from itertools import permutations
+	    p = list(permutations(dungeons))
+	    
+	    def dungeon_expedition(k: int, dungeon_route: list) -> int:
+	        num_of_dungeon = 0
+	        for exhaust_condition, exhaust_deduction in dungeon_route:
+	            if k < exhaust_condition:
+	                break
+	            k -= exhaust_deduction
+	            num_of_dungeon += 1
+	        return num_of_dungeon
+	    
+	    num_of_dungeon_list = []
+	    for dungeon_route in p:
+	        num_of_dungeon_list.append(dungeon_expedition(k, dungeon_route))
+	
+	    return max(num_of_dungeon_list)
+	```
+---
+### 개념 정리
+#### `itertools.permutations()`의 출력에 관하여
+출력되는 객체의 type은 iterator다. iterator라서 print로는 바로 출력할 수 없고, for 루프로 순회하거나 `list()`를 통해 list 타입으로 변환해줘야 한다. 그렇다면 iterator란 무엇인가..?
+> [!info] iterator란?
+> Python에서 데이터를 하나씩 순서대로 꺼낼 수 있는 객체
+
+list, tuple, string 등은 **iterable**한 object이다. 그러니까 '**순회가 가능한 객체**'라는 뜻이다. 반면 **iterator**는 `next()` 함수의 호출을 통해서 '**요소를 하나씩 꺼낼 수 있는 객체**'이다. 아래와 같은 식이다.
+```python
+nums = [10, 20, 30]   # Iterable 리스트
+it = iter(nums)       # Iterator 객체 생성
+
+print(next(it))  # 10
+print(next(it))  # 20
+print(next(it))  # 30
+# 이후 다시 it에 대해 next() 사용시 오류 발생
+```
+사실 잘 모르겠는데 가장 큰 차이점은 iterator의 경우 메모리에 저장되지 않기 때문에 한 번 사용하면 다시는 사용할 수 없고 메모리를 아낄 수 있다는 점인거 같다. `itertools.permutations` 외에 iterator을 반환하는 함수들은 `map`, `filter`, `zip` 등이 있다고 한다.
