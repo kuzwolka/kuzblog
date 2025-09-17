@@ -1,6 +1,11 @@
 ---
-title: Welcome to My Blog
+title: index.md
+date: 2025-09-16
 ---
-
-안녕하세요, 뭔갈 배우기 위해서 만든 블로그입니다.  
+### About Me
+공부한 내용을 정리하기 위해 만들었습니다!  
 방문해 주셔서 감사합니다.
+
+---
+### 공부중인 언어
+#Python #Rust 
