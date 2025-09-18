@@ -1,5 +1,5 @@
 ---
-publish: "\bfalse"
+draft: "true"
 title: BFS VS DFS
 date:
 tags:

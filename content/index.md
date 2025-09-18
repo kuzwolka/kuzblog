@@ -1,6 +1,7 @@
 ---
-title: index.md
+title: README
 date: 2025-09-16
+comments: "false"
 ---
 ### About Me
 공부한 내용을 정리하기 위해 만들었습니다!  

@@ -1,5 +1,5 @@
 ---
-publish: "true"
+draft: "true"
 title:
 date:
 tags:
